@@ -4,3 +4,5 @@ scikit-learn
 requests
 joblib
 python-dotenv
+matplotlib
+seaborn
