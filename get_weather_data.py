@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv('API_KEY') #WeatherAPI key
-KOTA = 'Yogyakarta'
+KOTA = '-7.694172256470859, 109.69516925410542'
 TANGGAL_MULAI = '2025-01-01'
 TANGGAL_SELESAI = date.today().strftime('%Y-%m-%d')
 NAMA_FILE = 'data_cuaca_histori.csv'
@@ -90,7 +90,7 @@ def ambil_data():
             print("Response mentah:", response.text)
 
         # Delay supaya tidak kena rate limit
-        time.sleep(1)
+        time.sleep(0.5)
 
     # Gabungkan data baru dengan data lama (jika ada)
     if all_data:

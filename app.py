@@ -79,7 +79,7 @@ FEATURE_ORDER = load_feature_order(FEATURE_ORDER_PATH)
 def get_weather_data(lokasi):
     if not API_KEY:
         raise ValueError("API key tidak tersedia.")
-    url = f"http://api.weatherapi.com/v1/forecast.json?key={API_KEY}&q={lokasi}&days={FORECAST_DAYS}"
+    url = f"https://api.weatherapi.com/v1/forecast.json?key={API_KEY}&q={lokasi}&days={FORECAST_DAYS}"
     response = requests.get(url)
     response.raise_for_status()
     return response.json()

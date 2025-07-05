@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, log_loss
 from sklearn.preprocessing import LabelEncoder
 import joblib
+import numpy as np
 
 # ========== 1. Load data historis
 df = pd.read_csv('data_cuaca_histori.csv')
@@ -62,6 +63,61 @@ model = RandomForestClassifier(
     n_estimators=150, random_state=42, class_weight='balanced_subsample'
 )
 model.fit(X_train, y_train)
+
+# ========== 7A. Evaluasi grafik loss & akurasi train vs validation
+# RandomForestClassifier tidak memiliki proses training bertahap seperti NN, jadi kita simulasi "curve" dengan learning curve
+from sklearn.model_selection import learning_curve
+
+train_sizes, train_scores, val_scores = learning_curve(
+    model, X, y_encoded, cv=5, scoring='accuracy', n_jobs=-1,
+    train_sizes=np.linspace(0.1, 1.0, 10), shuffle=True, random_state=42
+)
+# Akurasi rata-rata
+train_acc_mean = np.mean(train_scores, axis=1)
+val_acc_mean = np.mean(val_scores, axis=1)
+
+# Untuk "loss", gunakan log_loss pada prediksi probabilitas
+train_loss = []
+val_loss = []
+for train_size in train_sizes:
+    # Ambil subset data
+    idx = np.random.RandomState(42).choice(np.arange(X.shape[0]), int(train_size), replace=False)
+    X_tr = X.iloc[idx]
+    y_tr = y_encoded[idx]
+    X_vl = X_test
+    y_vl = y_test
+    model_tmp = RandomForestClassifier(
+        n_estimators=150, random_state=42, class_weight='balanced_subsample'
+    )
+    model_tmp.fit(X_tr, y_tr)
+    y_tr_prob = model_tmp.predict_proba(X_tr)
+    y_vl_prob = model_tmp.predict_proba(X_vl)
+    train_loss.append(log_loss(y_tr, y_tr_prob, labels=np.arange(len(le.classes_))))
+    val_loss.append(log_loss(y_vl, y_vl_prob, labels=np.arange(len(le.classes_))))
+
+# Plot grafik loss
+plt.figure(figsize=(8,5))
+plt.plot(train_sizes, train_loss, marker='o', label='Training Loss')
+plt.plot(train_sizes, val_loss, marker='o', label='Validation Loss')
+plt.xlabel('Number of Training Samples')
+plt.ylabel('Log Loss')
+plt.title('Training vs Validation Loss')
+plt.legend()
+plt.tight_layout()
+plt.savefig('model/loss_curve.png')
+plt.close()
+
+# Plot grafik akurasi
+plt.figure(figsize=(8,5))
+plt.plot(train_sizes, train_acc_mean, marker='o', label='Training Accuracy')
+plt.plot(train_sizes, val_acc_mean, marker='o', label='Validation Accuracy')
+plt.xlabel('Number of Training Samples')
+plt.ylabel('Accuracy')
+plt.title('Training vs Validation Accuracy')
+plt.legend()
+plt.tight_layout()
+plt.savefig('model/accuracy_curve.png')
+plt.close()
 
 # ========== 8. Evaluasi
 y_pred = model.predict(X_test)
