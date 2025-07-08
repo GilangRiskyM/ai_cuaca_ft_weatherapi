@@ -1,8 +1,5 @@
 # Abaikan folder virtual environment
 venv/
 
-# Abaikan folder model hasil pelatihan
-model/
-
 # Abaikan file konfigurasi environment
 .env
