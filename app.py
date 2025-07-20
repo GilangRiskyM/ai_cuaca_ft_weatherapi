@@ -25,6 +25,7 @@ MODEL_PATH = 'model/model_cuaca.pkl'
 ENCODER_PATH = 'model/label_encoder.pkl'
 AKURASI_PATH = 'model/accuracy.txt'
 FEATURE_ORDER_PATH = 'model/feature_order.pkl'
+LAST_UPDATED_PATH = 'model/last_updated.txt'   # Tambahan path
 
 # Flask App
 app = Flask(__name__)
@@ -71,9 +72,19 @@ def load_feature_order(path):
         logger.critical(f"❌ Gagal memuat urutan fitur: {e}")
         return None
 
+# Load last updated timestamp
+def load_last_updated(path):
+    try:
+        with open(path, 'r') as f:
+            return f.read().strip()
+    except Exception as e:
+        logger.warning(f"⚠️ Gagal memuat timestamp terakhir model diperbarui: {e}")
+        return None
+
 model, le = load_ml_components()
 AKURASI_MODEL = load_accuracy(AKURASI_PATH)
 FEATURE_ORDER = load_feature_order(FEATURE_ORDER_PATH)
+LAST_UPDATED = load_last_updated(LAST_UPDATED_PATH)
 
 # Ambil data cuaca dari API
 def get_weather_data(lokasi):
@@ -177,7 +188,8 @@ def predict():
         return jsonify({
             'lokasi': lokasi,
             'hasil': hasil,
-            'akurasi_model': f"{AKURASI_MODEL:.2f}%" if AKURASI_MODEL else None
+            'akurasi_model': f"{AKURASI_MODEL:.2f}%" if AKURASI_MODEL else None,
+            'terakhir_model_diperbarui': LAST_UPDATED if LAST_UPDATED else None
         })
     except Exception as e:
         logger.error(f"❌ Gagal memproses prediksi: {e}")

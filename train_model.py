@@ -142,6 +142,13 @@ cm = confusion_matrix(y_test, y_pred)
 cm_norm = confusion_matrix(y_test, y_pred, normalize='true')
 labels = le.classes_
 
+# ========== 12. Simpan timestamp terakhir model diperbarui
+import datetime
+last_updated = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+with open('model/last_updated.txt', 'w') as f:
+    f.write(last_updated)
+print(f"🕒 Model terakhir diperbarui pada: {last_updated}")
+
 plt.figure(figsize=(8, 6))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
 plt.xlabel('Predicted')
